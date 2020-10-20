@@ -114,7 +114,7 @@ disqusShortname = ""
 
     [[params.tiles.showcase]]
       title = "Spielberg vs. Burton"
-      subtitle = "Who is the king of IMDb?"
+      subtitle = "Who is the king of IMDb ratings?"
       image = "projects/imdb.gif"
       url = "projects/project2"
 
