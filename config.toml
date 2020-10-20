@@ -38,7 +38,7 @@ disqusShortname = ""
   # Navigation Section
   [params.navigation]
     title = "Fabio Bodenmann"
-    subtitle = "MFA"
+    subtitle = "MFA | Data Analytics Portfolio"
     menu = "Menu"
     # Optional logo as brand stored in img/
     # logo = "logo.png"
@@ -154,7 +154,7 @@ disqusShortname = ""
   [params.two]
     enable = true
     title = "About this website"
-    subtitle = """On this website you will find a few projects that I worked on during the Data Analytics course at London Business School, using the R programming language. """
+    subtitle = """On this website you will find a few projects that I worked on during the Data Analytics course at London Business School, using the R programming language."""
     buttonText = "Projects"
     url = "projects"
 
