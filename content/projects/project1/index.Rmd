@@ -1,0 +1,190 @@
+---
+title: "Climate Change and temperature anomalies over time"
+author: "Fabio Bodenmann"
+image: "climate_change.jpg"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE, 
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+options(digits = 3)
+
+# default figure size
+knitr::opts_chunk$set(
+  fig.width=6.75, 
+  fig.height=6.75,
+  fig.align = "center"
+)
+```
+
+
+```{r load-libraries, include=FALSE}
+library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages
+library(mosaic)
+library(ggthemes)
+library(lubridate)
+library(here)
+library(skimr)
+library(janitor)
+library(httr)
+library(readxl)
+library(vroom)
+library(infer)
+library(formattable)
+```
+
+
+
+#Looking at data from NASA
+
+The data used is obtained from the *Combined Land-Surface Air and Sea-Surface Water Temperature Anomalies* in the Northern Hemisphere at [NASA's Goddard Institute for Space Studies](https://data.giss.nasa.gov/gistemp). 
+
+The tabular data of temperature anomalies can be found [here](https://data.giss.nasa.gov/gistemp/tabledata_v3/NH.Ts+dSST.txt)
+
+To define temperature anomalies there needs to be a reference, or base, period which NASA clearly states that it is the period between 1951-1980.
+
+
+```{r Loading Weather Data, cache=TRUE}
+weather <- 
+  read_csv("https://data.giss.nasa.gov/gistemp/tabledata_v3/NH.Ts+dSST.csv", 
+           skip = 1, 
+           na = "***")
+
+```
+
+For each month and year, the dataframe shows the deviation of temperature from the normal (expected).
+
+Here I select the relevant information for the data analysis and convert the data frame into tidy format. The new dataframe "tidyweather" is in long format with temperature deviations per month stored in the variable delta. 
+
+```{r tidyweather}
+tidyweather <- weather %>% 
+  select(Year, Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec) 
+
+tidyweather <- weather %>% 
+  select(Year, Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec) %>% 
+  gather("Jan", "Feb", "Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec", key = Month, value = delta)
+
+```
+
+
+## Plotting Deltas over time
+
+By plotting all weather anomalies over time, we can see a clear trend that the deviations in temperature from the base is increasing over time. Specifically, since 1975 there has been a stark increase where the deviation is on average greater than 0 and approaching and even exceeding 1 degree by 2019.  
+
+```{r scatter_plot}
+
+tidyweather <- tidyweather %>%
+  mutate(date = ymd(paste(as.character(Year), Month, "1")),
+         month = month(date, label=TRUE),
+         year = year(date))
+
+ggplot(tidyweather, aes(x=date, y = delta))+
+  geom_point()+
+  geom_smooth(color="red") +
+  theme_bw() +
+  labs (
+    title = "Weather Anomalies", x = "Time", y = "Deviation from base (in degrees)"
+  ) 
+```
+Faceting these anomalies by months we can see that the general trends holds for all months. Note, during colder months (Oct - Mar), the increase seems more drastic since 1975. 
+
+
+```{r facet_wrap, echo=FALSE}
+
+ggplot(tidyweather, aes(x=date, y = delta))+
+  geom_point()+
+  geom_smooth(color="red") +
+  theme_bw() +
+  labs (
+    title = "Weather Anomalies",
+    y = "Deviation from base (in degrees)"
+  ) + facet_wrap(~month)
+```
+By averaging these deviations on a yearly basis, we also see a similar trend.
+
+```{r averaging}
+#creating yearly averages
+average_annual_anomaly <- tidyweather %>% 
+  group_by(Year) %>%   #grouping data by Year
+  
+  # creating summaries for mean delta 
+  # use `na.rm=TRUE` to eliminate NA (not available) values 
+  summarise(annual_average_delta = mean(delta, na.rm=TRUE)) 
+
+#plotting the data:
+ggplot(average_annual_anomaly, aes(x=Year, y= annual_average_delta))+
+  geom_point()+
+  
+  #Fit the best fit line, using LOESS method
+  geom_smooth() +
+  
+  #change to theme_bw() to have white background + black frame around plot
+  theme_bw() +
+  labs (
+    title = "Average Yearly Anomaly",
+    y     = "Average Annual Deviation from Base in degrees"
+  )                         
+
+```
+
+
+It could also be interesting to see how varying time periods compare to the base level in terms of distribution. For this, we need to add time period categories for all observations since 1881. I have created 5 categories below.
+
+```{r intervals}
+
+comparison <- tidyweather %>% 
+  filter(Year>= 1881) %>%     #remove years prior to 1881
+  #create new variable 'interval', and assign values based on criteria below:
+  mutate(interval = case_when(
+    Year %in% c(1881:1920) ~ "1881-1920",
+    Year %in% c(1921:1950) ~ "1921-1950",
+    Year %in% c(1951:1980) ~ "1951-1980",
+    Year %in% c(1981:2010) ~ "1981-2010",
+    TRUE ~ "2011-present"
+  ))
+
+```
+
+## Statistical Analysis
+
+Now we can look at the distribution of deltas over the time periods. The base period (1951-1980) is highlighted green and has a mean close to 0 and with the smallest standard deviation, depicted by the width of the distribution. Over time, the mean and standard deviation has significantly increased, with 2011-present showing a mean 0.8 degrees.  
+
+```{r density_plot}
+
+ggplot(comparison, aes(x=delta, fill=interval))+
+  geom_density(alpha=0.2) +   #density plot with tranparency set to 20%
+  theme_bw() +                #theme
+  labs (
+    title = "Density Plot for Monthly Temperature Anomalies",
+    y     = "Density",         #changing y-axis label to sentence case
+    x = "Deviation from base level (degrees)"
+  )
+
+```
+
+Finally, here are summary statistics of the deviations since 2011. Most importantly, we can see that the mean_delta is increasing strongly over time. Furthermore, the 95% confidence intervals are increasing drastically.
+
+```{r, calculate_CI_using_formula}
+
+formula_ci <- comparison %>% 
+  filter(interval == "2011-present") %>% 
+  group_by(year) %>% 
+  summarise(mean_delta = mean(delta, na.rm = TRUE), sd_delta = sd(delta, na.rm = TRUE), count = n(), t_critical = qt(0.975, count-1), se = sd_delta/sqrt(count), margin_of_error = t_critical * se, ci_low = mean_delta - margin_of_error, ci_high = mean_delta + margin_of_error)
+
+formattable(formula_ci)
+```
+
+

@@ -1,0 +1,1154 @@
+---
+title: 'Box Office Analysis'
+author: "Fabio Bodenmann"
+date: "2020-10-20"
+image: "cinema.jpg"
+output:
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+    code_folding: show
+  pdf_document:
+    toc: yes
+---
+
+
+
+<div id="analysis-of-box-office-movie-performance" class="section level1">
+<h1>Analysis of box office movie performance</h1>
+<p>What are the movie genres with the most movies at the box office?</p>
+<pre class="r"><code>genres &lt;- movies %&gt;%
+  group_by(genre) %&gt;%
+  count(sort=TRUE)
+
+formattable(genres)</code></pre>
+<table class="table table-condensed">
+<thead>
+<tr>
+<th style="text-align:right;">
+genre
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+Comedy
+</td>
+<td style="text-align:right;">
+848
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Action
+</td>
+<td style="text-align:right;">
+738
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Drama
+</td>
+<td style="text-align:right;">
+498
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Adventure
+</td>
+<td style="text-align:right;">
+288
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Crime
+</td>
+<td style="text-align:right;">
+202
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Biography
+</td>
+<td style="text-align:right;">
+135
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Horror
+</td>
+<td style="text-align:right;">
+131
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Animation
+</td>
+<td style="text-align:right;">
+35
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Fantasy
+</td>
+<td style="text-align:right;">
+28
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Documentary
+</td>
+<td style="text-align:right;">
+25
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Mystery
+</td>
+<td style="text-align:right;">
+16
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Sci-Fi
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Family
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Musical
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Romance
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Western
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Thriller
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+</tbody>
+</table>
+<p>Below is a table showing the return on every dollar of the budget, split up by category. Musical movies seem to be the most profitable using this metric.</p>
+<pre class="r"><code>means&lt;-movies%&gt;%
+  group_by(genre)%&gt;% 
+  summarise(Average_budget=mean(budget), Average_gross_earnings=mean(gross), Return_on_budget=Average_gross_earnings/Average_budget, .groups = &#39;drop&#39;) %&gt;%
+  arrange(desc(Return_on_budget))
+
+#group the data set by genre, calculate the average gross earning and budget by genre and return_on_budget which equals to average gross earning/average budget, then use arrange() to range genres in descending order
+
+formattable(means)</code></pre>
+<table class="table table-condensed">
+<thead>
+<tr>
+<th style="text-align:right;">
+genre
+</th>
+<th style="text-align:right;">
+Average_budget
+</th>
+<th style="text-align:right;">
+Average_gross_earnings
+</th>
+<th style="text-align:right;">
+Return_on_budget
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+Musical
+</td>
+<td style="text-align:right;">
+3189500
+</td>
+<td style="text-align:right;">
+9.21e+07
+</td>
+<td style="text-align:right;">
+28.87098
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Family
+</td>
+<td style="text-align:right;">
+14833333
+</td>
+<td style="text-align:right;">
+1.49e+08
+</td>
+<td style="text-align:right;">
+10.05576
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Western
+</td>
+<td style="text-align:right;">
+3465000
+</td>
+<td style="text-align:right;">
+2.08e+07
+</td>
+<td style="text-align:right;">
+6.00920
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Documentary
+</td>
+<td style="text-align:right;">
+5887852
+</td>
+<td style="text-align:right;">
+1.74e+07
+</td>
+<td style="text-align:right;">
+2.94742
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Horror
+</td>
+<td style="text-align:right;">
+13504916
+</td>
+<td style="text-align:right;">
+3.77e+07
+</td>
+<td style="text-align:right;">
+2.79259
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Fantasy
+</td>
+<td style="text-align:right;">
+17582143
+</td>
+<td style="text-align:right;">
+4.24e+07
+</td>
+<td style="text-align:right;">
+2.41204
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Comedy
+</td>
+<td style="text-align:right;">
+24446319
+</td>
+<td style="text-align:right;">
+4.26e+07
+</td>
+<td style="text-align:right;">
+1.74384
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Mystery
+</td>
+<td style="text-align:right;">
+39218750
+</td>
+<td style="text-align:right;">
+6.75e+07
+</td>
+<td style="text-align:right;">
+1.72196
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Animation
+</td>
+<td style="text-align:right;">
+61701429
+</td>
+<td style="text-align:right;">
+9.84e+07
+</td>
+<td style="text-align:right;">
+1.59532
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Biography
+</td>
+<td style="text-align:right;">
+28543696
+</td>
+<td style="text-align:right;">
+4.52e+07
+</td>
+<td style="text-align:right;">
+1.58360
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Adventure
+</td>
+<td style="text-align:right;">
+66290069
+</td>
+<td style="text-align:right;">
+9.58e+07
+</td>
+<td style="text-align:right;">
+1.44508
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Drama
+</td>
+<td style="text-align:right;">
+26242933
+</td>
+<td style="text-align:right;">
+3.75e+07
+</td>
+<td style="text-align:right;">
+1.42764
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Crime
+</td>
+<td style="text-align:right;">
+26596169
+</td>
+<td style="text-align:right;">
+3.75e+07
+</td>
+<td style="text-align:right;">
+1.41007
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Romance
+</td>
+<td style="text-align:right;">
+25107500
+</td>
+<td style="text-align:right;">
+3.13e+07
+</td>
+<td style="text-align:right;">
+1.24524
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Action
+</td>
+<td style="text-align:right;">
+71354888
+</td>
+<td style="text-align:right;">
+8.66e+07
+</td>
+<td style="text-align:right;">
+1.21343
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Sci-Fi
+</td>
+<td style="text-align:right;">
+27607143
+</td>
+<td style="text-align:right;">
+2.98e+07
+</td>
+<td style="text-align:right;">
+1.07901
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Thriller
+</td>
+<td style="text-align:right;">
+300000
+</td>
+<td style="text-align:right;">
+2.47e+03
+</td>
+<td style="text-align:right;">
+0.00823
+</td>
+</tr>
+</tbody>
+</table>
+<p>The top 15 directors who have created the highest gross revenue in the box office:</p>
+<pre class="r"><code>top15_director&lt;- movies %&gt;%
+  group_by(director) %&gt;%
+  summarise(total_gross = sum(gross, na.rm=TRUE),avg_gross=mean(gross, na.rm=TRUE),med_gross=median(gross,na.rm=TRUE),sd_gross=sd(gross, na.rm=TRUE),Number_of_movies = n(),.groups = &#39;drop&#39;) %&gt;%
+  arrange(desc(total_gross),.groups = &#39;drop&#39;)%&gt;%
+  head(15)
+#group movies by director, sum the total gross for each director, calculate the mean, median, sd of gross for each director, then use arrange() to range total gross in descending order and choose the top 15 values
+formattable(top15_director)</code></pre>
+<table class="table table-condensed">
+<thead>
+<tr>
+<th style="text-align:right;">
+director
+</th>
+<th style="text-align:right;">
+total_gross
+</th>
+<th style="text-align:right;">
+avg_gross
+</th>
+<th style="text-align:right;">
+med_gross
+</th>
+<th style="text-align:right;">
+sd_gross
+</th>
+<th style="text-align:right;">
+Number_of_movies
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+Steven Spielberg
+</td>
+<td style="text-align:right;">
+4.01e+09
+</td>
+<td style="text-align:right;">
+1.75e+08
+</td>
+<td style="text-align:right;">
+1.64e+08
+</td>
+<td style="text-align:right;">
+1.01e+08
+</td>
+<td style="text-align:right;">
+23
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Michael Bay
+</td>
+<td style="text-align:right;">
+2.23e+09
+</td>
+<td style="text-align:right;">
+1.72e+08
+</td>
+<td style="text-align:right;">
+1.38e+08
+</td>
+<td style="text-align:right;">
+1.27e+08
+</td>
+<td style="text-align:right;">
+13
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Tim Burton
+</td>
+<td style="text-align:right;">
+2.07e+09
+</td>
+<td style="text-align:right;">
+1.29e+08
+</td>
+<td style="text-align:right;">
+7.65e+07
+</td>
+<td style="text-align:right;">
+1.09e+08
+</td>
+<td style="text-align:right;">
+16
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Sam Raimi
+</td>
+<td style="text-align:right;">
+2.01e+09
+</td>
+<td style="text-align:right;">
+2.01e+08
+</td>
+<td style="text-align:right;">
+2.35e+08
+</td>
+<td style="text-align:right;">
+1.62e+08
+</td>
+<td style="text-align:right;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+James Cameron
+</td>
+<td style="text-align:right;">
+1.91e+09
+</td>
+<td style="text-align:right;">
+3.18e+08
+</td>
+<td style="text-align:right;">
+1.76e+08
+</td>
+<td style="text-align:right;">
+3.09e+08
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Christopher Nolan
+</td>
+<td style="text-align:right;">
+1.81e+09
+</td>
+<td style="text-align:right;">
+2.27e+08
+</td>
+<td style="text-align:right;">
+1.97e+08
+</td>
+<td style="text-align:right;">
+1.87e+08
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+George Lucas
+</td>
+<td style="text-align:right;">
+1.74e+09
+</td>
+<td style="text-align:right;">
+3.48e+08
+</td>
+<td style="text-align:right;">
+3.80e+08
+</td>
+<td style="text-align:right;">
+1.46e+08
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Robert Zemeckis
+</td>
+<td style="text-align:right;">
+1.62e+09
+</td>
+<td style="text-align:right;">
+1.25e+08
+</td>
+<td style="text-align:right;">
+1.01e+08
+</td>
+<td style="text-align:right;">
+9.13e+07
+</td>
+<td style="text-align:right;">
+13
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Clint Eastwood
+</td>
+<td style="text-align:right;">
+1.38e+09
+</td>
+<td style="text-align:right;">
+7.25e+07
+</td>
+<td style="text-align:right;">
+4.67e+07
+</td>
+<td style="text-align:right;">
+7.55e+07
+</td>
+<td style="text-align:right;">
+19
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Francis Lawrence
+</td>
+<td style="text-align:right;">
+1.36e+09
+</td>
+<td style="text-align:right;">
+2.72e+08
+</td>
+<td style="text-align:right;">
+2.82e+08
+</td>
+<td style="text-align:right;">
+1.35e+08
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Ron Howard
+</td>
+<td style="text-align:right;">
+1.34e+09
+</td>
+<td style="text-align:right;">
+1.11e+08
+</td>
+<td style="text-align:right;">
+1.02e+08
+</td>
+<td style="text-align:right;">
+8.19e+07
+</td>
+<td style="text-align:right;">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Gore Verbinski
+</td>
+<td style="text-align:right;">
+1.33e+09
+</td>
+<td style="text-align:right;">
+1.90e+08
+</td>
+<td style="text-align:right;">
+1.23e+08
+</td>
+<td style="text-align:right;">
+1.54e+08
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Andrew Adamson
+</td>
+<td style="text-align:right;">
+1.14e+09
+</td>
+<td style="text-align:right;">
+2.84e+08
+</td>
+<td style="text-align:right;">
+2.80e+08
+</td>
+<td style="text-align:right;">
+1.21e+08
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Shawn Levy
+</td>
+<td style="text-align:right;">
+1.13e+09
+</td>
+<td style="text-align:right;">
+1.03e+08
+</td>
+<td style="text-align:right;">
+8.55e+07
+</td>
+<td style="text-align:right;">
+6.55e+07
+</td>
+<td style="text-align:right;">
+11
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Ridley Scott
+</td>
+<td style="text-align:right;">
+1.13e+09
+</td>
+<td style="text-align:right;">
+8.06e+07
+</td>
+<td style="text-align:right;">
+4.78e+07
+</td>
+<td style="text-align:right;">
+6.88e+07
+</td>
+<td style="text-align:right;">
+14
+</td>
+</tr>
+</tbody>
+</table>
+<p>Below is how the ratings are distributed for the different genres.</p>
+<pre class="r"><code>ratings&lt;-movies%&gt;%
+  group_by(genre)%&gt;%
+  summarise(avg_rating=mean(rating),min_rating=min(rating),max_rating=max(rating),med_rating=median(rating),sd_rating=sd(rating),.groups = &#39;drop&#39;) %&gt;% 
+  arrange(desc(avg_rating))
+
+formattable(ratings)</code></pre>
+<table class="table table-condensed">
+<thead>
+<tr>
+<th style="text-align:right;">
+genre
+</th>
+<th style="text-align:right;">
+avg_rating
+</th>
+<th style="text-align:right;">
+min_rating
+</th>
+<th style="text-align:right;">
+max_rating
+</th>
+<th style="text-align:right;">
+med_rating
+</th>
+<th style="text-align:right;">
+sd_rating
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+Biography
+</td>
+<td style="text-align:right;">
+7.11
+</td>
+<td style="text-align:right;">
+4.5
+</td>
+<td style="text-align:right;">
+8.9
+</td>
+<td style="text-align:right;">
+7.20
+</td>
+<td style="text-align:right;">
+0.760
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Crime
+</td>
+<td style="text-align:right;">
+6.92
+</td>
+<td style="text-align:right;">
+4.8
+</td>
+<td style="text-align:right;">
+9.3
+</td>
+<td style="text-align:right;">
+6.90
+</td>
+<td style="text-align:right;">
+0.849
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Mystery
+</td>
+<td style="text-align:right;">
+6.86
+</td>
+<td style="text-align:right;">
+4.6
+</td>
+<td style="text-align:right;">
+8.5
+</td>
+<td style="text-align:right;">
+6.90
+</td>
+<td style="text-align:right;">
+0.882
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Musical
+</td>
+<td style="text-align:right;">
+6.75
+</td>
+<td style="text-align:right;">
+6.3
+</td>
+<td style="text-align:right;">
+7.2
+</td>
+<td style="text-align:right;">
+6.75
+</td>
+<td style="text-align:right;">
+0.636
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Drama
+</td>
+<td style="text-align:right;">
+6.73
+</td>
+<td style="text-align:right;">
+2.1
+</td>
+<td style="text-align:right;">
+8.8
+</td>
+<td style="text-align:right;">
+6.80
+</td>
+<td style="text-align:right;">
+0.917
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Documentary
+</td>
+<td style="text-align:right;">
+6.66
+</td>
+<td style="text-align:right;">
+1.6
+</td>
+<td style="text-align:right;">
+8.5
+</td>
+<td style="text-align:right;">
+7.40
+</td>
+<td style="text-align:right;">
+1.767
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Sci-Fi
+</td>
+<td style="text-align:right;">
+6.66
+</td>
+<td style="text-align:right;">
+5.0
+</td>
+<td style="text-align:right;">
+8.2
+</td>
+<td style="text-align:right;">
+6.40
+</td>
+<td style="text-align:right;">
+1.094
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Animation
+</td>
+<td style="text-align:right;">
+6.65
+</td>
+<td style="text-align:right;">
+4.5
+</td>
+<td style="text-align:right;">
+8.0
+</td>
+<td style="text-align:right;">
+6.90
+</td>
+<td style="text-align:right;">
+0.968
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Romance
+</td>
+<td style="text-align:right;">
+6.65
+</td>
+<td style="text-align:right;">
+6.2
+</td>
+<td style="text-align:right;">
+7.1
+</td>
+<td style="text-align:right;">
+6.65
+</td>
+<td style="text-align:right;">
+0.636
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Adventure
+</td>
+<td style="text-align:right;">
+6.51
+</td>
+<td style="text-align:right;">
+2.3
+</td>
+<td style="text-align:right;">
+8.6
+</td>
+<td style="text-align:right;">
+6.60
+</td>
+<td style="text-align:right;">
+1.094
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Family
+</td>
+<td style="text-align:right;">
+6.50
+</td>
+<td style="text-align:right;">
+5.7
+</td>
+<td style="text-align:right;">
+7.9
+</td>
+<td style="text-align:right;">
+5.90
+</td>
+<td style="text-align:right;">
+1.217
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Action
+</td>
+<td style="text-align:right;">
+6.23
+</td>
+<td style="text-align:right;">
+2.1
+</td>
+<td style="text-align:right;">
+9.0
+</td>
+<td style="text-align:right;">
+6.30
+</td>
+<td style="text-align:right;">
+1.030
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Fantasy
+</td>
+<td style="text-align:right;">
+6.15
+</td>
+<td style="text-align:right;">
+4.3
+</td>
+<td style="text-align:right;">
+7.9
+</td>
+<td style="text-align:right;">
+6.45
+</td>
+<td style="text-align:right;">
+0.959
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Comedy
+</td>
+<td style="text-align:right;">
+6.11
+</td>
+<td style="text-align:right;">
+1.9
+</td>
+<td style="text-align:right;">
+8.8
+</td>
+<td style="text-align:right;">
+6.20
+</td>
+<td style="text-align:right;">
+1.023
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Horror
+</td>
+<td style="text-align:right;">
+5.83
+</td>
+<td style="text-align:right;">
+3.6
+</td>
+<td style="text-align:right;">
+8.5
+</td>
+<td style="text-align:right;">
+5.90
+</td>
+<td style="text-align:right;">
+1.014
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Western
+</td>
+<td style="text-align:right;">
+5.70
+</td>
+<td style="text-align:right;">
+4.1
+</td>
+<td style="text-align:right;">
+7.3
+</td>
+<td style="text-align:right;">
+5.70
+</td>
+<td style="text-align:right;">
+2.263
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Thriller
+</td>
+<td style="text-align:right;">
+4.80
+</td>
+<td style="text-align:right;">
+4.8
+</td>
+<td style="text-align:right;">
+4.8
+</td>
+<td style="text-align:right;">
+4.80
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>ggplot(movies, aes(x = rating)) + geom_density() +facet_wrap(~genre)+labs(title = &quot;Ratings distribution by genre&quot;, y = &quot;Density of rating&quot;,  x = &quot;Rating&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-4-1.png" width="648" style="display: block; margin: auto;" /></p>
+</div>

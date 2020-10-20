@@ -1,0 +1,110 @@
+---
+title: "Spielberg vs. Burton: IMDb Ratings"
+author: "Fabio Bodenmann"
+date: "2020-10-20"
+image: "imdb.gif"
+output:
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+
+
+
+<div id="imdb-ratings-differences-between-directors" class="section level1">
+<h1>IMDB ratings: Differences between directors</h1>
+<p>Who has got the upper hand on IMDb ratings? On average, Spielberg’s movies achieve a rating of 7.57, while Burton’s movies achieve a rating of 6.93. However, there is some overlap in the 95% confidence interval for their ratings. See the chart below for a visualization.</p>
+<pre class="r"><code>spielberg_burton_movies&lt;-movies%&gt;%
+  
+  filter(director==&quot;Tim Burton&quot;|director==&quot;Steven Spielberg&quot;)%&gt;% #filter by director called Tim Burton and Steven Spielberg
+  
+  group_by(director)%&gt;% #group by director
+  
+  summarise(mean_rating = mean(rating, na.rm = TRUE), #calculate mean value
+            sd_rating = sd(rating, na.rm=TRUE), #calculate standard deviation
+            count = n(), #count the number
+            se_rating = sd_rating/sqrt(count), #calculate standard error
+            t_critical = qt(0.975, count-1), #calculate t-statistics
+            margin_of_error = t_critical * se_rating, #calculate margin of error
+            lower = mean_rating - t_critical * se_rating, #calculate the lower part of CI
+            upper = mean_rating + t_critical * se_rating) #calculate the upper part of CI
+
+lower_boundary&lt;-as.numeric(spielberg_burton_movies[1,8])
+
+upper_boundary&lt;-as.numeric(spielberg_burton_movies[2,9])
+
+ggplot(spielberg_burton_movies, aes(x = mean_rating, y =reorder(director,mean_rating)))+ #draw a new ggplot
+  
+  geom_point(aes(color=director,fill=director),size=4,shape=21) + #draw the point value colored and filled by director
+  
+  geom_errorbar(aes(xmax =lower, xmin = upper,color=director),width=0.1,size=1)+ #draw the error bar 
+  
+  labs(title=&quot;Do Spielberg and Burton have the same mean IMDB ratings?&quot;,subtitle=&quot;95% confidence intervals overlap&quot;,x=&quot;Mean IMDb Rating&quot;,y=&quot;&quot;)+ #add labs
+  
+  theme_bw()+ #set the theme
+  
+  geom_text(aes(label=format(mean_rating,digits=3,format=&quot;f&quot;)),vjust=-0.7,size=5)+ #add data label
+  
+  geom_rect(aes(xmin = lower_boundary, xmax = upper_boundary,ymin = -Inf, ymax = +Inf), fill = &quot;#D3D3D3&quot;, alpha = 0.3)+ #add the overlapped part
+  
+  theme(legend.position = &quot;none&quot;)+ #hide the legend
+  
+  theme(plot.title = element_text(face=&quot;bold&quot;)) #bold the main title</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-1-1.png" width="648" style="display: block; margin: auto;" /></p>
+<p>In order to be 100% sure, we can look at some statistical information before we crown the king of IMDb.</p>
+<pre class="r"><code>director_ratings&lt;-movies%&gt;%
+  
+  filter(director==&quot;Tim Burton&quot;|director==&quot;Steven Spielberg&quot;)%&gt;% #filter by director called Tim Burton and Steven Spielberg
+  
+  group_by(director)%&gt;%  #group by director
+  
+  select(director, rating) #select director and rating 
+
+t.test(rating ~ director, data = director_ratings) #use t.test() to calculate</code></pre>
+<pre><code>## 
+##  Welch Two Sample t-test
+## 
+## data:  rating by director
+## t = 3, df = 31, p-value = 0.01
+## alternative hypothesis: true difference in means is not equal to 0
+## 95 percent confidence interval:
+##  0.16 1.13
+## sample estimates:
+## mean in group Steven Spielberg       mean in group Tim Burton 
+##                           7.57                           6.93</code></pre>
+<pre class="r"><code>obs_diff_director &lt;- director_ratings %&gt;%
+  
+  specify(rating ~ director) %&gt;% #use specify() to associate rating and director
+  
+  calculate(stat = &quot;diff in means&quot;, order = c(&quot;Steven Spielberg&quot;, &quot;Tim Burton&quot;)) #calculate difference in means
+
+null_dist_director &lt;- director_ratings%&gt;% 
+  
+  specify(rating ~ director) %&gt;% #use specify() to associate rating and director
+  
+  hypothesize(null = &quot;independence&quot;) %&gt;% 
+  
+  generate(reps = 1000, type = &quot;permute&quot;) %&gt;% #repeat 1000 times
+  
+  calculate(stat = &quot;diff in means&quot;, order = c(&quot;Steven Spielberg&quot;, &quot;Tim Burton&quot;)) #calculate difference in means
+
+null_dist_director %&gt;% visualize() +
+  
+  shade_p_value(obs_stat = obs_diff_director, direction = &quot;two-sided&quot;) #shape p_value</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-2-1.png" width="648" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>null_dist_director %&gt;%
+  
+  get_p_value(obs_stat = obs_diff_director, direction = &quot;two_sided&quot;) #get p_value</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   p_value
+##     &lt;dbl&gt;
+## 1   0.004</code></pre>
+<p>Null hypothesis: The difference of the mean ratings of Spielberg and Burton is equal to 0.</p>
+<p>Alternative hypothesis: The difference of the mean ratings of Spielberg and Burton is not equal to 0.</p>
+<p>Conclusion: Based on both the t.test and the infer command, there seems to be a statistically significant difference in the mean ratings of Spielberg and Burton based on a 0.014 p-value using the infer command and a 0.01 p-value using the t.test command. Therefore we reject the null hypothesis.</p>
+<p>Hence, the Spielberg wins the battle over IMDb ratings.</p>
+</div>

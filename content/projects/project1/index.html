@@ -1,0 +1,402 @@
+---
+title: "Climate Change and temperature anomalies over time"
+author: "Fabio Bodenmann"
+image: "climate_change.jpg"
+date: "2020-10-20"
+output:
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+
+
+
+<p>#Looking at data from NASA</p>
+<p>The data used is obtained from the <em>Combined Land-Surface Air and Sea-Surface Water Temperature Anomalies</em> in the Northern Hemisphere at <a href="https://data.giss.nasa.gov/gistemp">NASA’s Goddard Institute for Space Studies</a>.</p>
+<p>The tabular data of temperature anomalies can be found <a href="https://data.giss.nasa.gov/gistemp/tabledata_v3/NH.Ts+dSST.txt">here</a></p>
+<p>To define temperature anomalies there needs to be a reference, or base, period which NASA clearly states that it is the period between 1951-1980.</p>
+<pre class="r"><code>weather &lt;- 
+  read_csv(&quot;https://data.giss.nasa.gov/gistemp/tabledata_v3/NH.Ts+dSST.csv&quot;, 
+           skip = 1, 
+           na = &quot;***&quot;)</code></pre>
+<p>For each month and year, the dataframe shows the deviation of temperature from the normal (expected).</p>
+<p>Here I select the relevant information for the data analysis and convert the data frame into tidy format. The new dataframe “tidyweather” is in long format with temperature deviations per month stored in the variable delta.</p>
+<pre class="r"><code>tidyweather &lt;- weather %&gt;% 
+  select(Year, Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec) 
+
+tidyweather &lt;- weather %&gt;% 
+  select(Year, Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec) %&gt;% 
+  gather(&quot;Jan&quot;, &quot;Feb&quot;, &quot;Mar&quot;,&quot;Apr&quot;,&quot;May&quot;,&quot;Jun&quot;,&quot;Jul&quot;,&quot;Aug&quot;,&quot;Sep&quot;,&quot;Oct&quot;,&quot;Nov&quot;,&quot;Dec&quot;, key = Month, value = delta)</code></pre>
+<div id="plotting-deltas-over-time" class="section level2">
+<h2>Plotting Deltas over time</h2>
+<p>By plotting all weather anomalies over time, we can see a clear trend that the deviations in temperature from the base is increasing over time. Specifically, since 1975 there has been a stark increase where the deviation is on average greater than 0 and approaching and even exceeding 1 degree by 2019.</p>
+<pre class="r"><code>tidyweather &lt;- tidyweather %&gt;%
+  mutate(date = ymd(paste(as.character(Year), Month, &quot;1&quot;)),
+         month = month(date, label=TRUE),
+         year = year(date))
+
+ggplot(tidyweather, aes(x=date, y = delta))+
+  geom_point()+
+  geom_smooth(color=&quot;red&quot;) +
+  theme_bw() +
+  labs (
+    title = &quot;Weather Anomalies&quot;, x = &quot;Time&quot;, y = &quot;Deviation from base (in degrees)&quot;
+  ) </code></pre>
+<p><img src="index_files/figure-html/scatter_plot-1.png" width="648" style="display: block; margin: auto;" />
+Faceting these anomalies by months we can see that the general trends holds for all months. Note, during colder months (Oct - Mar), the increase seems more drastic since 1975.</p>
+<p><img src="index_files/figure-html/facet_wrap-1.png" width="648" style="display: block; margin: auto;" />
+By averaging these deviations on a yearly basis, we also see a similar trend.</p>
+<pre class="r"><code>#creating yearly averages
+average_annual_anomaly &lt;- tidyweather %&gt;% 
+  group_by(Year) %&gt;%   #grouping data by Year
+  
+  # creating summaries for mean delta 
+  # use `na.rm=TRUE` to eliminate NA (not available) values 
+  summarise(annual_average_delta = mean(delta, na.rm=TRUE)) 
+
+#plotting the data:
+ggplot(average_annual_anomaly, aes(x=Year, y= annual_average_delta))+
+  geom_point()+
+  
+  #Fit the best fit line, using LOESS method
+  geom_smooth() +
+  
+  #change to theme_bw() to have white background + black frame around plot
+  theme_bw() +
+  labs (
+    title = &quot;Average Yearly Anomaly&quot;,
+    y     = &quot;Average Annual Deviation from Base in degrees&quot;
+  )                         </code></pre>
+<p><img src="index_files/figure-html/averaging-1.png" width="648" style="display: block; margin: auto;" /></p>
+<p>It could also be interesting to see how varying time periods compare to the base level in terms of distribution. For this, we need to add time period categories for all observations since 1881. I have created 5 categories below.</p>
+<pre class="r"><code>comparison &lt;- tidyweather %&gt;% 
+  filter(Year&gt;= 1881) %&gt;%     #remove years prior to 1881
+  #create new variable &#39;interval&#39;, and assign values based on criteria below:
+  mutate(interval = case_when(
+    Year %in% c(1881:1920) ~ &quot;1881-1920&quot;,
+    Year %in% c(1921:1950) ~ &quot;1921-1950&quot;,
+    Year %in% c(1951:1980) ~ &quot;1951-1980&quot;,
+    Year %in% c(1981:2010) ~ &quot;1981-2010&quot;,
+    TRUE ~ &quot;2011-present&quot;
+  ))</code></pre>
+</div>
+<div id="statistical-analysis" class="section level2">
+<h2>Statistical Analysis</h2>
+<p>Now we can look at the distribution of deltas over the time periods. The base period (1951-1980) is highlighted green and has a mean close to 0 and with the smallest standard deviation, depicted by the width of the distribution. Over time, the mean and standard deviation has significantly increased, with 2011-present showing a mean 0.8 degrees.</p>
+<pre class="r"><code>ggplot(comparison, aes(x=delta, fill=interval))+
+  geom_density(alpha=0.2) +   #density plot with tranparency set to 20%
+  theme_bw() +                #theme
+  labs (
+    title = &quot;Density Plot for Monthly Temperature Anomalies&quot;,
+    y     = &quot;Density&quot;,         #changing y-axis label to sentence case
+    x = &quot;Deviation from base level (degrees)&quot;
+  )</code></pre>
+<p><img src="index_files/figure-html/density_plot-1.png" width="648" style="display: block; margin: auto;" /></p>
+<p>Finally, here are summary statistics of the deviations since 2011. Most importantly, we can see that the mean_delta is increasing strongly over time. Furthermore, the 95% confidence intervals are increasing drastically.</p>
+<pre class="r"><code>formula_ci &lt;- comparison %&gt;% 
+  filter(interval == &quot;2011-present&quot;) %&gt;% 
+  group_by(year) %&gt;% 
+  summarise(mean_delta = mean(delta, na.rm = TRUE), sd_delta = sd(delta, na.rm = TRUE), count = n(), t_critical = qt(0.975, count-1), se = sd_delta/sqrt(count), margin_of_error = t_critical * se, ci_low = mean_delta - margin_of_error, ci_high = mean_delta + margin_of_error)
+
+formattable(formula_ci)</code></pre>
+<table class="table table-condensed">
+<thead>
+<tr>
+<th style="text-align:right;">
+year
+</th>
+<th style="text-align:right;">
+mean_delta
+</th>
+<th style="text-align:right;">
+sd_delta
+</th>
+<th style="text-align:right;">
+count
+</th>
+<th style="text-align:right;">
+t_critical
+</th>
+<th style="text-align:right;">
+se
+</th>
+<th style="text-align:right;">
+margin_of_error
+</th>
+<th style="text-align:right;">
+ci_low
+</th>
+<th style="text-align:right;">
+ci_high
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+2011
+</td>
+<td style="text-align:right;">
+0.700
+</td>
+<td style="text-align:right;">
+0.103
+</td>
+<td style="text-align:right;">
+12
+</td>
+<td style="text-align:right;">
+2.2
+</td>
+<td style="text-align:right;">
+0.0298
+</td>
+<td style="text-align:right;">
+0.0655
+</td>
+<td style="text-align:right;">
+0.634
+</td>
+<td style="text-align:right;">
+0.766
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2012
+</td>
+<td style="text-align:right;">
+0.765
+</td>
+<td style="text-align:right;">
+0.160
+</td>
+<td style="text-align:right;">
+12
+</td>
+<td style="text-align:right;">
+2.2
+</td>
+<td style="text-align:right;">
+0.0462
+</td>
+<td style="text-align:right;">
+0.1017
+</td>
+<td style="text-align:right;">
+0.663
+</td>
+<td style="text-align:right;">
+0.867
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2013
+</td>
+<td style="text-align:right;">
+0.753
+</td>
+<td style="text-align:right;">
+0.111
+</td>
+<td style="text-align:right;">
+12
+</td>
+<td style="text-align:right;">
+2.2
+</td>
+<td style="text-align:right;">
+0.0321
+</td>
+<td style="text-align:right;">
+0.0706
+</td>
+<td style="text-align:right;">
+0.682
+</td>
+<td style="text-align:right;">
+0.823
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2014
+</td>
+<td style="text-align:right;">
+0.900
+</td>
+<td style="text-align:right;">
+0.140
+</td>
+<td style="text-align:right;">
+12
+</td>
+<td style="text-align:right;">
+2.2
+</td>
+<td style="text-align:right;">
+0.0405
+</td>
+<td style="text-align:right;">
+0.0891
+</td>
+<td style="text-align:right;">
+0.811
+</td>
+<td style="text-align:right;">
+0.989
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2015
+</td>
+<td style="text-align:right;">
+1.130
+</td>
+<td style="text-align:right;">
+0.163
+</td>
+<td style="text-align:right;">
+12
+</td>
+<td style="text-align:right;">
+2.2
+</td>
+<td style="text-align:right;">
+0.0470
+</td>
+<td style="text-align:right;">
+0.1035
+</td>
+<td style="text-align:right;">
+1.027
+</td>
+<td style="text-align:right;">
+1.233
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2016
+</td>
+<td style="text-align:right;">
+1.276
+</td>
+<td style="text-align:right;">
+0.326
+</td>
+<td style="text-align:right;">
+12
+</td>
+<td style="text-align:right;">
+2.2
+</td>
+<td style="text-align:right;">
+0.0940
+</td>
+<td style="text-align:right;">
+0.2069
+</td>
+<td style="text-align:right;">
+1.069
+</td>
+<td style="text-align:right;">
+1.483
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2017
+</td>
+<td style="text-align:right;">
+1.126
+</td>
+<td style="text-align:right;">
+0.213
+</td>
+<td style="text-align:right;">
+12
+</td>
+<td style="text-align:right;">
+2.2
+</td>
+<td style="text-align:right;">
+0.0616
+</td>
+<td style="text-align:right;">
+0.1355
+</td>
+<td style="text-align:right;">
+0.990
+</td>
+<td style="text-align:right;">
+1.261
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2018
+</td>
+<td style="text-align:right;">
+0.989
+</td>
+<td style="text-align:right;">
+0.158
+</td>
+<td style="text-align:right;">
+12
+</td>
+<td style="text-align:right;">
+2.2
+</td>
+<td style="text-align:right;">
+0.0455
+</td>
+<td style="text-align:right;">
+0.1001
+</td>
+<td style="text-align:right;">
+0.889
+</td>
+<td style="text-align:right;">
+1.089
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2019
+</td>
+<td style="text-align:right;">
+1.117
+</td>
+<td style="text-align:right;">
+0.163
+</td>
+<td style="text-align:right;">
+12
+</td>
+<td style="text-align:right;">
+2.2
+</td>
+<td style="text-align:right;">
+0.0470
+</td>
+<td style="text-align:right;">
+0.1035
+</td>
+<td style="text-align:right;">
+1.014
+</td>
+<td style="text-align:right;">
+1.221
+</td>
+</tr>
+</tbody>
+</table>
+</div>

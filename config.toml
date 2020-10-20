@@ -1,5 +1,5 @@
 # Site settings
-baseURL = "http://example.org/"
+baseURL = "https://fabio-bodenmann-portfolio.netlify.app/"
 languageCode = "en-us"
 title = "Portfolio Website for Fabio Bodenmann"
 theme = "forty"
@@ -38,7 +38,7 @@ disqusShortname = ""
   # Navigation Section
   [params.navigation]
     title = "Fabio Bodenmann"
-    # subtitle = "By HTML5 Up"
+    subtitle = "MFA"
     menu = "Menu"
     # Optional logo as brand stored in img/
     # logo = "logo.png"
@@ -46,18 +46,27 @@ disqusShortname = ""
     [[params.navigation.links]]
       name = "Home"
       url = "#"
+      
+    [[params.navigation.links]]
+     name = "About me"
+      url = "aboutme/aboutme"     
 
     [[params.navigation.links]]
-      name = "Blogs"
-      url = "blogs"
+     name = "Projects"
+      url = "projects"
+      
+    #[[params.navigation.links]]
+     #name = "Blogs"
+      #url = "blogs"     
+      
 
-    [[params.navigation.links]]
-      name = "Generic Blog"
-      url = "blogs/ipsum"
+    #[[params.navigation.links]]
+     # name = "Generic Blog"
+      #url = "blogs/ipsum"
 
-    [[params.navigation.links]]
-      name = "Elements"
-      url = "elements.html"
+    #[[params.navigation.links]]
+     # name = "Elements"
+      #url = "elements.html"
 
     # Add custom links here by uncommenting code below. To remove links just delete
     # the [[params.navigation.links]] map associated with that link. Copy and paste
@@ -67,65 +76,71 @@ disqusShortname = ""
     #    url = "UrlOfLink"
 
     # Button Style 1
-    [[params.navigation.button1]]
-      name = "Get Started"
-      url = "blogs"
+    #[[params.navigation.button1]]
+     # name = "Get Started"
+     # url = "blogs"
 
     # Button Style 2
-    [[params.navigation.button2]]
-      name = "Log In"
-      url = "#"
+    #[[params.navigation.button2]]
+     # name = "Log In"
+     # url = "#"
 
 
   # Banner section
   [params.banner]
     # To change the background image on the homepage banner, replace 'banner.jpg' in
     # the 'static/img' folder.
-    title = "Hi, my name is Fabio Bodenmann"
-    subtitle = "I am a Masters in Financial Analysis student at the London Business School. This is my Data Analytics portfolio website."
-    buttonText = "Get Started"
+    title = "Hi, my name is Fabio"
+    subtitle = "I am a Masters in Financial Analysis student at the London Business School. This is my Data Analytics portfolio website, showcasing some of my projects. Enjoy :)"
+    buttonText = "Let's explore"
 
 
   # Tiles Section
   [params.tiles]
     enable = true
     # Display your showcases here.
+      
+    [[params.tiles.showcase]]
+      title = "About me"
+      subtitle = "Swiss made"
+      image = "projects/rheintal.jpg"
+      url = "aboutme/aboutme"
     
     [[params.tiles.showcase]]
-      title = "Aliquam"
-      subtitle = "Ipsum Dolor Sit Amet"
-      image = "pic01.jpg"
-      url = "blogs/aliquam"
+      title = "Climate Change"
+      subtitle = "Is the world melting?!"
+      image = "projects/climate_change.jpg"
+      url = "projects/project1"
 
     [[params.tiles.showcase]]
-      title = "Tempus"
-      subtitle = "Feugiat Amet Tempus"
-      image = "pic02.jpg"
-      url = "blogs/tempus"
+      title = "Spielberg vs. Burton"
+      subtitle = "Who is the king of IMDb?"
+      image = "projects/imdb.gif"
+      url = "projects/project2"
 
     [[params.tiles.showcase]]
-      title = "Magna"
-      subtitle = "Lorem Etiam Nullam"
-      image = "pic03.jpg"
-      url = "blogs/magna"
+      title = "The Box Office"
+      subtitle = "Genres, Directors: Top and Flop"
+      image = "projects/cinema.jpg"
+      url = "projects/project3"
 
     [[params.tiles.showcase]]
-      title = "Ipsum"
-      subtitle = "Nisl Sed Aliquam"
-      image = "pic04.jpg"
-      url = "blogs/ipsum"
+      title = "Politics"
+      subtitle = "Is Trump losing the approval of America?"
+      image = "projects/politics.jpg"
+      url = "projects/project4"
 
     [[params.tiles.showcase]]
-      title = "Consequat"
-      subtitle = "Ipsum Dolor Sit Amet"
-      image = "pic05.jpg"
-      url = "blogs/ipsum"
+      title = "Yield Curve Inversion"
+      subtitle = "the history of the US yield curve "
+      image = "projects/finance.jpg"
+      url = "projects/project5"
 
-    [[params.tiles.showcase]]
-      title = "Etiam"
-      subtitle = "Feugiat Amet Tempus"
-      image = "pic06.jpg"
-      url = "blogs/ipsum"
+    #[[params.tiles.showcase]]
+     # title = "Etiam"
+      #subtitle = "Feugiat Amet Tempus"
+      #image = "pic06.jpg"
+      #url = "blogs/ipsum"
     # You can make more showcases by copy and pasting the code above
 
   [params.blog]
@@ -138,14 +153,10 @@ disqusShortname = ""
   # Section Type Two
   [params.two]
     enable = true
-    title = "Massa libero"
-    subtitle = """Nullam et orci eu lorem consequat tincidunt vivamus et sagittis libero. 
-    Mauris aliquet magna magna sed nunc rhoncus pharetra. 
-    Pellentesque condimentum sem. In efficitur ligula tate urna. Maecenas laoreet massa vel lacinia pellentesque lorem ipsum dolor. 
-    Nullam et orci eu lorem consequat tincidunt. Vivamus et sagittis libero.
-    Mauris aliquet magna magna sed nunc rhoncus amet pharetra et feugiat tempus."""
-    buttonText = "Get Started"
-    url = "blogs"
+    title = "About this website"
+    subtitle = """On this website you will find a few projects that I worked on during the Data Analytics course at London Business School, using the R programming language. """
+    buttonText = "Projects"
+    url = "projects"
 
 
   # Contact section
@@ -172,17 +183,17 @@ disqusShortname = ""
     # by copying the corresponding map with frontmatter code.
     [[params.contact.email]]
     title = "Email"
-    email = "fabio.bodenmann@gmail.com"
+    email = "fbodenmann.mfa2021@london.edu"
 
-    #[[params.contact.phone]]
-    #title = "Phone"
-    #phone = "(000) 000-0000 x1234"
+    [[params.contact.phone]]
+    title = "Phone"
+    phone = "Email me for contact details"
 
-    #[[params.contact.address]]
-    #title = "Address"
-    #street = "Street"
-    #city = "City, ST 00000"
-    #country = "Country"
+    [[params.contact.address]]
+    title = "LBS Address"
+    street = "Regent's Park"
+    city = "London, NW1 4SA"
+    country = "United Kingdom"
 
   # Footer section
   [params.footer]

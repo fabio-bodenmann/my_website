@@ -1,0 +1,184 @@
+---
+title: "Trump's Approval Margin"
+author: "Fabio Bodenmann"
+image: "politics.jpg"
+date: "2020-10-20"
+output:
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+
+
+
+<div id="trumps-approval-margins" class="section level1">
+<h1>Trump’s Approval Margins</h1>
+<pre class="r"><code># Use `lubridate` to fix dates, as they are given as characters.
+
+approval_polllist &lt;- approval_polllist %&gt;% mutate(modeldate = mdy(modeldate),enddate = mdy(enddate),startdate = mdy(startdate),createddate = mdy(createddate))</code></pre>
+<p>Trump’s average net approval rate (approve- disapprove) for each week since he got into office.</p>
+<pre class="r"><code>weeks &lt;- approval_polllist %&gt;% 
+  mutate(week = cut.Date(enddate, breaks = &quot;1 week&quot;, labels = FALSE, start.on.monday=0))
+
+
+graph_weeks &lt;-  weeks %&gt;% group_by(week) %&gt;%
+  summarise(net_approval = mean(adjusted_approve) - mean(adjusted_disapprove)) %&gt;%
+  ggplot( aes(x=week, y=net_approval, group=1)) + 
+  geom_smooth(color=&quot;red&quot;) + 
+  geom_line(color=&quot;blue&quot;) + 
+  geom_point() + 
+  labs(title=&quot;President Trump Approval Rating&quot;, x=&quot;Weeks in Office&quot;, y=&quot;Average approval rating&quot;) +
+  theme_bw() 
+
+graph_weeks</code></pre>
+<p><img src="index_files/figure-html/average_rating-1.png" width="648" style="display: block; margin: auto;" /></p>
+<p>Splitting up by year:</p>
+<pre class="r"><code>year_faceted &lt;- weeks %&gt;% mutate(facet_year = year(enddate)) %&gt;% group_by(week) %&gt;%
+  summarise(net_approval = mean(adjusted_approve) - mean(adjusted_disapprove), facet_year=mean(facet_year)) %&gt;%
+  mutate(week=week%%52) %&gt;%
+  filter(facet_year == 2017 |facet_year == 2018 |facet_year == 2019 |facet_year == 2020) %&gt;%
+  ggplot( aes(x=week, y=net_approval, group=1)) + 
+  geom_smooth(color=&quot;red&quot;) + 
+  geom_line(color=&quot;blue&quot;) + 
+  facet_wrap(~facet_year) +
+  geom_point() + 
+  labs(title=&quot;President Trump Approval Rating&quot;, x=&quot;Weeks in Office&quot;, y=&quot;Average Net Aproval rating (%)&quot;) +
+  theme_bw() + 
+  geom_hline(yintercept=0, linetype=&quot;solid&quot;, color = &quot;orange&quot;) +
+  ylim(-20, 7.5)
+
+year_faceted</code></pre>
+<p><img src="index_files/figure-html/trump_margins-1.png" width="100%" style="display: block; margin: auto;" /></p>
+<p>Comparing Confidence Intervals for <code>week 15</code> (6-12 April 2020) and <code>week 34</code> (17-23 August 2020)</p>
+<pre class="r"><code>ci_week_15 &lt;- weeks %&gt;% 
+  filter(week == &quot;15&quot;) %&gt;% 
+  summarise(mean_week_15 = mean(adjusted_approve)-mean(adjusted_disapprove),sd_week_15 = sd(adjusted_approve-adjusted_disapprove), count = n(), t_critical = qt(0.975, count-1), se = sqrt(( (sd(adjusted_approve)^2/count)+(sd(adjusted_disapprove)^2/count))), margin_of_error = t_critical * se, ci_low = mean_week_15 - margin_of_error, ci_high = mean_week_15 + margin_of_error)
+
+formattable(ci_week_15)</code></pre>
+<table class="table table-condensed">
+<thead>
+<tr>
+<th style="text-align:right;">
+mean_week_15
+</th>
+<th style="text-align:right;">
+sd_week_15
+</th>
+<th style="text-align:right;">
+count
+</th>
+<th style="text-align:right;">
+t_critical
+</th>
+<th style="text-align:right;">
+se
+</th>
+<th style="text-align:right;">
+margin_of_error
+</th>
+<th style="text-align:right;">
+ci_low
+</th>
+<th style="text-align:right;">
+ci_high
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+-8.07
+</td>
+<td style="text-align:right;">
+3.81
+</td>
+<td style="text-align:right;">
+78
+</td>
+<td style="text-align:right;">
+1.99
+</td>
+<td style="text-align:right;">
+0.325
+</td>
+<td style="text-align:right;">
+0.647
+</td>
+<td style="text-align:right;">
+-8.72
+</td>
+<td style="text-align:right;">
+-7.43
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>ci_week_34 &lt;- weeks %&gt;% 
+ filter(week == &quot;34&quot;) %&gt;% 
+  summarise(mean_week_34 = mean(adjusted_approve)-mean(adjusted_disapprove),sd_week_34 = sd(adjusted_approve-adjusted_disapprove), count = n(), t_critical = qt(0.975, count-1), se = sqrt(( (sd(adjusted_approve)^2/count)+(sd(adjusted_disapprove)^2/count))), margin_of_error = t_critical * se, ci_low = mean_week_34 - margin_of_error, ci_high = mean_week_34 + margin_of_error)
+
+formattable(ci_week_34)</code></pre>
+<table class="table table-condensed">
+<thead>
+<tr>
+<th style="text-align:right;">
+mean_week_34
+</th>
+<th style="text-align:right;">
+sd_week_34
+</th>
+<th style="text-align:right;">
+count
+</th>
+<th style="text-align:right;">
+t_critical
+</th>
+<th style="text-align:right;">
+se
+</th>
+<th style="text-align:right;">
+margin_of_error
+</th>
+<th style="text-align:right;">
+ci_low
+</th>
+<th style="text-align:right;">
+ci_high
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+-15.4
+</td>
+<td style="text-align:right;">
+4.02
+</td>
+<td style="text-align:right;">
+89
+</td>
+<td style="text-align:right;">
+1.99
+</td>
+<td style="text-align:right;">
+0.316
+</td>
+<td style="text-align:right;">
+0.628
+</td>
+<td style="text-align:right;">
+-16.1
+</td>
+<td style="text-align:right;">
+-14.8
+</td>
+</tr>
+</tbody>
+</table>
+<p>Explanation: The Confidence Intervals between week 15 and week 34 show a marked decrease in the approval rating of close to 8% both in terms of high and low, showing an overall marked worsening in terms of popular perception of President Trump’s work. A possible explanation would be that in the 200 weeks between the two periods under consideration a series of interventions, executive orders and public statements have made the President increasingly unpopular, a hypehtisis shown by the previous graphs that show a constant downward trend in ratings.</p>
+</div>

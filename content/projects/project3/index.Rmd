@@ -1,0 +1,110 @@
+---
+title: 'Box Office Analysis'
+author: "Fabio Bodenmann"
+date: "`r Sys.Date()`"
+image: "cinema.jpg"
+output:
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+    code_folding: show
+  pdf_document:
+    toc: yes
+---
+
+
+```{r, setup, echo=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE, 
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+options(digits = 3)
+
+# default figure size
+knitr::opts_chunk$set(
+  fig.width=6.75, 
+  fig.height=6.75,
+  fig.align = "center"
+)
+```
+
+
+```{r load-libraries, warning=FALSE, message=FALSE, echo=FALSE}
+library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages
+library(mosaic)
+library(ggthemes)
+library(lubridate)
+library(fivethirtyeight)
+library(here)
+library(skimr)
+library(janitor)
+library(vroom)
+library(tidyquant)
+library(rvest)    # scrape websites
+library(purrr)  
+library(lubridate) #to handle dates
+library(formattable)
+```
+
+
+# Analysis of box office movie performance
+
+```{r,load_movies, echo=FALSE, warning=FALSE, message=FALSE}
+movies <- read_csv(here::here("content/projects/project3/data", "movies.csv"))
+
+```
+
+
+
+What are the movie genres with the most movies at the box office?
+```{r}
+genres <- movies %>%
+  group_by(genre) %>%
+  count(sort=TRUE)
+
+formattable(genres)
+```
+
+Below is a table showing the return on every dollar of the budget, split up by category. Musical movies seem to be the most profitable using this metric.
+
+
+```{r}
+means<-movies%>%
+  group_by(genre)%>% 
+  summarise(Average_budget=mean(budget), Average_gross_earnings=mean(gross), Return_on_budget=Average_gross_earnings/Average_budget, .groups = 'drop') %>%
+  arrange(desc(Return_on_budget))
+
+#group the data set by genre, calculate the average gross earning and budget by genre and return_on_budget which equals to average gross earning/average budget, then use arrange() to range genres in descending order
+
+formattable(means)
+```
+
+The top 15 directors who have created the highest gross revenue in the box office:
+
+```{r}
+top15_director<- movies %>%
+  group_by(director) %>%
+  summarise(total_gross = sum(gross, na.rm=TRUE),avg_gross=mean(gross, na.rm=TRUE),med_gross=median(gross,na.rm=TRUE),sd_gross=sd(gross, na.rm=TRUE),Number_of_movies = n(),.groups = 'drop') %>%
+  arrange(desc(total_gross),.groups = 'drop')%>%
+  head(15)
+#group movies by director, sum the total gross for each director, calculate the mean, median, sd of gross for each director, then use arrange() to range total gross in descending order and choose the top 15 values
+formattable(top15_director)
+```
+
+Below is how the ratings are distributed for the different genres. 
+
+```{r}
+ratings<-movies%>%
+  group_by(genre)%>%
+  summarise(avg_rating=mean(rating),min_rating=min(rating),max_rating=max(rating),med_rating=median(rating),sd_rating=sd(rating),.groups = 'drop') %>% 
+  arrange(desc(avg_rating))
+
+formattable(ratings)
+
+ggplot(movies, aes(x = rating)) + geom_density() +facet_wrap(~genre)+labs(title = "Ratings distribution by genre", y = "Density of rating",  x = "Rating")
+
+```

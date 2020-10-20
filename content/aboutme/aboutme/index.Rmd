@@ -1,0 +1,37 @@
+---
+title: "About me"
+output:
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load-libraries, include=FALSE}
+library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages
+library(mosaic)
+library(ggthemes)
+library(lubridate)
+library(here)
+library(skimr)
+library(janitor)
+library(httr)
+library(readxl)
+library(vroom)
+library(infer)
+library(formattable)
+```
+
+```{r echo = FALSE}
+knitr::include_graphics("rheintal.jpg")
+```
+
+I was born and grew up in a small farmers town in Switzerland, in a valley bordering Liechtenstein. Shaped by traveling from a young age all across the globe, I set out to experience different cultures, studying for four years at Boston College in the U.S. and spending a semester at the Copenhagen Business School in Denmark. I am now pursuing my Masters in Financial Analysis at one of the most diverse business school in one of the most diverse cities in the world.
+
