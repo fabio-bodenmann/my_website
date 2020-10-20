@@ -1,5 +1,5 @@
 # Site settings
-baseURL = "https://fabio-bodenmann-portfolio.netlify.app/"
+baseURL = "https://fabio-portfolio.netlify.app/"
 languageCode = "en-us"
 title = "Portfolio Website for Fabio Bodenmann"
 theme = "forty"
